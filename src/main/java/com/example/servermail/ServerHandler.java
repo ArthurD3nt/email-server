@@ -4,12 +4,10 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-
-public class ServerHandler implements Runnable{
+public class ServerHandler implements Runnable {
 
     private Socket incoming;
     private int counter;
-
 
     public ServerHandler(Socket incoming, int counter) {
         this.incoming = incoming;
@@ -18,32 +16,34 @@ public class ServerHandler implements Runnable{
 
     @Override
     public void run() {
-        try {
-            try {
-                InputStream inStream = incoming.getInputStream();
-                OutputStream outStream = incoming.getOutputStream();
+        try{
+            // create a DataInputStream so we can read data from it.
+            InputStream inputStream = incoming.getInputStream();
+            DataInputStream dataInputStream = new DataInputStream(inputStream);
 
-                Scanner in = new Scanner(inStream);
-                PrintWriter out = new PrintWriter(outStream, true);
+            OutputStream outputStream = incoming.getOutputStream();
+            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
 
-                out.println("Ciao client " + this.counter);
-
-                boolean done = false;
-                while (!done /*&& in.hasNextLine()*/) {
-                    String line = in.nextLine();
-
-                    System.out.println("ECHO: "+ line);
-                    if (line.trim().equals("BYE"))
-                        done = true;
-                }
+            // read the message from the socket
+            String email = dataInputStream.readUTF();
+            File folder = new File("./email/" + email);
+            if (!folder.exists()) {
+                dataOutputStream.write(1);
+                System.out.println("No email");
+                // create the folder
+                folder.mkdir();
             }
-            finally {
-                System.out.println("FINITO");
-                incoming.close();
+            else {
+                dataOutputStream.write(1);
+                System.out.println("Email found");
             }
+
+            // check if exist a folder with the name of the sender
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        catch (IOException e) {e.printStackTrace();}
-    }
 
+    }
 
 }
