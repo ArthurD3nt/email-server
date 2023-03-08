@@ -17,29 +17,34 @@ public class ServerHandler implements Runnable {
     @Override
     public void run() {
         try{
-            // create a DataInputStream so we can read data from it.
-            InputStream inputStream = incoming.getInputStream();
-            DataInputStream dataInputStream = new DataInputStream(inputStream);
+            ObjectInputStream in = new ObjectInputStream(incoming.getInputStream());  
+            ObjectOutputStream out = new ObjectOutputStream(incoming.getOutputStream()); 
+            
+            Map<String, Object> jsonMap = (Map<String, Object>) in.readObject();
+            String connection_type = (String) jsonMap.get("type");
+            switch(connection_type){
+                case "connection":
+                    String email = (String) jsonMap.get("email");
+                    // check if exist folder with email name
+                    File folder = new File("./email/", email);
+                    String response = "1";
+                    if(!folder.exists()){
+                        response = "1";
+                    }
+                    else{
+                        response = "0";
+                    }
+                    Map<String, String> jsonRes = new HashMap<>();
+                    jsonRes.put("response", response);
+                    out.writeObject(jsonRes);
+                    }
+            
+            
 
-            OutputStream outputStream = incoming.getOutputStream();
-            DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-
-            // read the message from the socket
-            String email = dataInputStream.readUTF();
-            File folder = new File("./email/" + email);
-            if (!folder.exists()) {
-                dataOutputStream.write(1);
-                System.out.println("No email");
-                // create the folder
-                folder.mkdir();
-            }
-            else {
-                dataOutputStream.write(1);
-                System.out.println("Email found");
-            }
-
-            // check if exist a folder with the name of the sender
         } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
