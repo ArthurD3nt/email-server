@@ -10,14 +10,14 @@ import java.util.*;
 
 public class ServerHandler implements Runnable{
 
-    private Socket incoming;
+    private Socket socket;
     private int counter;
 
     private  Communication communication = null;
 
 
-    public ServerHandler(Socket incoming, int counter) {
-        this.incoming = incoming;
+    public ServerHandler(Socket socket, int counter) {
+        this.socket = socket;
         this.counter = counter;
     }
 
@@ -29,11 +29,10 @@ public class ServerHandler implements Runnable{
                 * InputStream: sono i byte che ricevo in input
                 * OutputStream: sono i byte che invio in input
                 * */
-
-                InputStream inStream = incoming.getInputStream();
-                OutputStream outStream = incoming.getOutputStream();
-
+                InputStream inStream = socket.getInputStream();
                 ObjectInputStream in = new ObjectInputStream(inStream);
+
+                OutputStream outStream = socket.getOutputStream();
                 ObjectOutputStream out= new ObjectOutputStream(outStream);
 
                 try {
@@ -56,7 +55,7 @@ public class ServerHandler implements Runnable{
             }
             finally {
                 System.out.println("FINITO");
-                incoming.close();
+                socket.close();
             }
         }
         catch (IOException e) {e.printStackTrace();}

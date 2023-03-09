@@ -16,16 +16,17 @@ public class Client {
             Socket s = new Socket(nomeHost, 8189);
 
             try {
-                ObjectInputStream inStream = new ObjectInputStream( s.getInputStream() );
                 OutputStream outStream = s.getOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(outStream);
-                
+
                 Communication c = new Communication("connection","email@email.com");
                 out.writeObject(c);
 
+                ObjectInputStream inStream = new ObjectInputStream(s.getInputStream());
+
                 try {
                     Communication communication = (Communication) inStream.readObject();
-                    System.out.println( communication);
+
                     switch(communication.getAction()){
                         case "ack":
                             System.out.println("ack");
