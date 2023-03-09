@@ -1,5 +1,8 @@
 package com.example.servermail;
 
+import com.example.bean.Communication;
+import com.example.bean.Email;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -13,25 +16,31 @@ public class Client {
             Socket s = new Socket(nomeHost, 8189);
 
             try {
-                InputStream inStream = s.getInputStream();
-                Scanner in = new Scanner(inStream);
+                ObjectInputStream inStream = new ObjectInputStream( s.getInputStream() );
                 OutputStream outStream = s.getOutputStream();
-                PrintWriter out = new PrintWriter(outStream, true);
-                Scanner stin = new Scanner(System.in);
+                ObjectOutputStream out = new ObjectOutputStream(outStream);
+                
+                Communication c = new Communication("connection","email@email.com");
+                out.writeObject(c);
 
-                String line = in.nextLine(); // attenzione: se il server non scrive nulla questo resta in attesa...
-                System.out.println(line);
-
-                boolean done = false;
-                while (!done) /* && in.hasNextLine()) */ {
-
-                    String lineout = stin.nextLine();
-                    out.println(lineout);
-
-                    System.out.println(line);
-                    if (lineout.equals("BYE"))
-                        done = true;
+                try {
+                    Communication communication = (Communication) inStream.readObject();
+                    System.out.println( communication);
+                    switch(communication.getAction()){
+                        case "ack":
+                            System.out.println("ack");
+                            break;
+                        case "sendEmail":
+                            Email e=(new Email("matteo",List.of("aaa"),"test","questo è un test"));
+                            //Communication c= new Communication("sendEmail",e);
+                            System.out.println("body:"+communication.getBody());
+                            break;
+                    }
+                } catch (ClassNotFoundException ex) {
+                    throw new RuntimeException(ex);
                 }
+
+
             }
             finally {
                 s.close();
