@@ -9,7 +9,7 @@ public class Server implements Runnable{
 
     @Override
     public void run (){
-     System.out.println("Finestra del server: ");
+
      try {
          int i = 1;
          ServerSocket s = new ServerSocket(8189);

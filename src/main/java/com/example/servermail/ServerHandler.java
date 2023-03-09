@@ -1,5 +1,8 @@
 package com.example.servermail;
 
+import com.example.bean.Communication;
+import com.example.bean.Email;
+
 import java.io.*;
 import java.net.*;
 import java.util.*;
@@ -9,6 +12,8 @@ public class ServerHandler implements Runnable{
 
     private Socket incoming;
     private int counter;
+
+    private  Communication communication = null;
 
 
     public ServerHandler(Socket incoming, int counter) {
@@ -20,22 +25,34 @@ public class ServerHandler implements Runnable{
     public void run() {
         try {
             try {
+                /* Stream sono un flusso di dati
+                * InputStream: sono i byte che ricevo in input
+                * OutputStream: sono i byte che invio in input
+                * */
+
                 InputStream inStream = incoming.getInputStream();
                 OutputStream outStream = incoming.getOutputStream();
 
-                Scanner in = new Scanner(inStream);
-                PrintWriter out = new PrintWriter(outStream, true);
+                ObjectInputStream in = new ObjectInputStream(inStream);
+                ObjectOutputStream out= new ObjectOutputStream(outStream);
 
-                out.println("Ciao client " + this.counter);
+                try {
 
-                boolean done = false;
-                while (!done /*&& in.hasNextLine()*/) {
-                    String line = in.nextLine();
+                communication = (Communication) in.readObject();
 
-                    System.out.println("ECHO: "+ line);
-                    if (line.trim().equals("BYE"))
-                        done = true;
+                switch(communication.getAction()){
+                    case "connection":
+                        System.out.println(communication.getBody());
+                        out.writeObject(new Communication("ack",""));
+                        break;
+                    case "sendEmail":
+                        System.out.println("body:"+communication.getBody());
+                        break;
                 }
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+
             }
             finally {
                 System.out.println("FINITO");

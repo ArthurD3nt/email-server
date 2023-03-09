@@ -5,4 +5,6 @@ module com.example.servermail {
 
     opens com.example.servermail to javafx.fxml;
     exports com.example.servermail;
+    exports com.example.bean;
+    opens com.example.bean to javafx.fxml;
 }
