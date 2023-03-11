@@ -41,8 +41,7 @@ public class Client {
     }
 
     private void sendEmail(){
-        Email e = (new Email("matteo", List.of("aaa"),"test","questo è un test"));
-        Communication email = new Communication("sendEmail",e);
+
     }
 
 }

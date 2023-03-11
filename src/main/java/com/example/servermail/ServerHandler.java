@@ -3,6 +3,7 @@ package com.example.servermail;
 import com.example.bean.Communication;
 import com.example.bean.Email;
 import com.example.bean.User;
+import com.example.model.UserModel;
 
 import java.io.*;
 import java.net.*;
@@ -14,26 +15,41 @@ public class ServerHandler implements Runnable{
     private Socket socket;
     private int counter;
 
-    private  Communication communication = null;
-
-    private Server server;
-
-    private ArrayList<User> userArrayList;
+    private ArrayList<Email> emailArrayList;
 
     public ServerHandler(Socket socket, int counter) {
         this.socket = socket;
         this.counter = counter;
-        this.server = new Server();
+    }
+
+    private Communication connection(String email){
+        UserModel.getInstance().readObjectFromFile(email);
+        this.emailArrayList = UserModel.getInstance().getUser(email);
+
+        Communication response = new Communication("connection_ok", emailArrayList);
+
+        return response;
+    }
+
+
+    private void sendEmail(Email email){
+        System.out.println(email.toString());
+        UserModel.getInstance().addEmailToMap(email.getSender(),email);
+        for(String user : email.getReceivers())
+            UserModel.getInstance().addEmailToMap(user,email);
     }
 
     @Override
     public void run() {
+
+
         try {
             try {
                 /* Stream sono un flusso di dati
                 * InputStream: sono i byte che ricevo in input
                 * OutputStream: sono i byte che invio in input
                 * */
+
                 InputStream inStream = socket.getInputStream();
                 ObjectInputStream in = new ObjectInputStream(inStream);
 
@@ -41,17 +57,18 @@ public class ServerHandler implements Runnable{
                 ObjectOutputStream out= new ObjectOutputStream(outStream);
 
                 try {
-                    communication = (Communication) in.readObject();
+                    while(true) {
 
-                    switch(communication.getAction()){
-                        case "connection":
-                            this.userArrayList = this.server.getUser();
-                            System.out.println("connection");
-
-                            break;
-                        case "sendEmail":
-                            System.out.println("body:"+communication.getBody());
-                            break;
+                        Communication communication = (Communication) in.readObject();
+                        switch (communication.getAction()) {
+                            case "connection":
+                                out.writeObject(connection((String)communication.getBody()));
+                                break;
+                            case "send_email":
+                                sendEmail((Email)communication.getBody());
+                                out.writeObject(new Communication("emails_saved", new ArrayList<>()));
+                                break;
+                        }
                     }
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
@@ -66,23 +83,4 @@ public class ServerHandler implements Runnable{
         catch (IOException e) {e.printStackTrace();}
     }
 
-
 }
-
-
-                                        /*switch(action){
-                case "connection":
-                   for(User u : this.user){
-
-                       if(u.getUser().equals(user)){
-                           found = true;
-                           communication = new Communication("connection_ok", u.getEmails());
-                       }
-                   }
-            }
-
-            if(!found){
-                this.user.add(new User(user,new ArrayList<Email>()));
-                this.writeObjectToFile();
-                communication  = new Communication("created_email", new ArrayList<Email>());
-            }*/

@@ -6,11 +6,13 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class Email implements Serializable {
 
+    private String id;
     private String sender;
-    private List<String> receivers;
+    private ArrayList<String> receivers;
     private String subject;
     private String text;
 
@@ -19,15 +21,13 @@ public class Email implements Serializable {
     private boolean bin;
 
 
-    private Email() {}
-
-    public Email(String sender, List<String> receivers, String subject, String text) {
+    public Email(String sender, ArrayList<String> receivers, String subject, String text) {
+        this.id = UUID.randomUUID().toString();
         this.sender = sender;
         this.subject = subject;
         this.text = text;
         this.receivers = new ArrayList<>(receivers);
-        Date date = new Date();
-        this.timestamp = new Timestamp(date.getTime());
+        this.timestamp = new Timestamp(new Date().getTime());
         this.bin = false;
     }
 
@@ -47,13 +47,19 @@ public class Email implements Serializable {
         return text;
     }
 
+    public String getId() {
+        return id;
+    }
 
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public void setSender(String sender) {
         this.sender = sender;
     }
 
-    public void setReceivers(List<String> receivers) {
+    public void setReceivers(ArrayList<String> receivers) {
         this.receivers = receivers;
     }
 
@@ -79,6 +85,19 @@ public class Email implements Serializable {
 
     public void setBin(boolean bin) {
         this.bin = bin;
+    }
+
+    @Override
+    public String toString() {
+        return "Email{" +
+                "id='" + id + '\'' +
+                ", sender='" + sender + '\'' +
+                ", receivers=" + receivers +
+                ", subject='" + subject + '\'' +
+                ", text='" + text + '\'' +
+                ", timestamp=" + timestamp +
+                ", bin=" + bin +
+                '}';
     }
 }
 

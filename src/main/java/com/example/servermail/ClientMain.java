@@ -5,7 +5,7 @@ import com.example.bean.Email;
 
 import java.io.*;
 import java.net.*;
-import java.util.*;
+import java.util.ArrayList;
 
 
 /**
@@ -51,18 +51,25 @@ public class ClientMain {
                 ObjectInputStream inStream = new ObjectInputStream(s.getInputStream());
 
                 try {
-                    Communication communication = (Communication) inStream.readObject();
+                    while(true){
 
-                    switch(communication.getAction()){
-                        case "created_email":
-                            System.out.println("created_email");
-                            System.out.println(communication.getBody());
-                            break;
-                        case "connection_ok":
-                            System.out.println("connection_ok");
-                            System.out.println(communication.getBody());
-                            break;
+                        Communication communication = (Communication) inStream.readObject();
 
+                        switch(communication.getAction()){
+                            case "connection_ok":
+                                System.out.println("connection_ok");
+                                System.out.println(communication.getBody());
+                                /*ArrayList<String> receivers = new ArrayList<>();
+                                receivers.add("matteo@edu.unito.it");
+                                receivers.add("stefano@edu.unito.it");
+                                receivers.add("ale@edu.unito.it");
+                                Email e  = new Email((String)c.getBody(), receivers, "first email", "fisrt-email text");
+                                out.writeObject(new Communication("send_email", e));*/
+                                break;
+                            case "emails_saved":
+                                System.out.println("email salvate");
+                                break;
+                        }
                     }
                 } catch (ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
