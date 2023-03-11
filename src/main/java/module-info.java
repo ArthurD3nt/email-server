@@ -4,8 +4,8 @@ module com.example.servermail {
     requires java.sql;
 
 
-    opens com.example.servermail to javafx.fxml;
     exports com.example.servermail;
     exports com.example.bean;
+    opens com.example.servermail to javafx.fxml;
     opens com.example.bean to javafx.fxml;
 }

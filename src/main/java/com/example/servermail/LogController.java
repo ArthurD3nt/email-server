@@ -6,6 +6,7 @@ import java.time.format.DateTimeFormatter;
 import com.example.model.LogModel;
 
 import javafx.fxml.FXML;
+import javafx.scene.paint.Color;
 import javafx.scene.text.TextFlow;
 import javafx.scene.text.Text;
 
@@ -28,12 +29,12 @@ public class LogController {
     }
 
     public void initialize() {
-        logModel.setLog("LogController initialize");
         logModel.setLog("Server start");
     }
 
     public void setLog(String log) {
-        Text fullLog= new Text(LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) +"\t -- " + "  " + log+"\n");
+        Text fullLog= new Text("["+LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss")) +"]\t -- " + "  " + log+"\n");
+        fullLog.setFill(Color.web("#d4d4d4"));
         logFlow.getChildren().add(fullLog);
     }
 }

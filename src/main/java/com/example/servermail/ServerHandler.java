@@ -1,5 +1,6 @@
 package com.example.servermail;
 
+import com.example.bean.Bin;
 import com.example.bean.Communication;
 import com.example.bean.Email;
 import com.example.bean.User;
@@ -30,23 +31,31 @@ public class ServerHandler implements Runnable{
     private Communication connection(String email){
         UserModel.getInstance().readObjectFromFile(email);
         this.emailArrayList = UserModel.getInstance().getUser(email);
-
         Communication response = new Communication("connection_ok", emailArrayList);
+        Platform.runLater(() -> logModel.setLog("Client " + email + " connected"));
 
         return response;
     }
 
-
     private void sendEmail(Email email){
-        logModel.setLog(email.toString());
         UserModel.getInstance().addEmailToMap(email.getSender(),email);
         for(String user : email.getReceivers())
             UserModel.getInstance().addEmailToMap(user,email);
     }
 
+    private void moveToBin(String id, String email){
+        ArrayList<Email> emailArrayList = UserModel.getInstance().getUser(email);
+        for(Email e: emailArrayList){
+            if(e.getId().equals(id)) {
+                e.setBin(true);
+                Platform.runLater(() -> logModel.setLog("Email with id " + id + " moved to bin"));
+            }
+        }
+        UserModel.getInstance().writeObjectToFile(email);
+    }
+
     @Override
     public void run() {
-
 
         try {
             try {
@@ -64,7 +73,7 @@ public class ServerHandler implements Runnable{
                 try {
                     while(true) {
                         Communication communication = (Communication) in.readObject();
-                        Platform.runLater(() -> logModel.setLog(communication.toString()));
+
                         switch (communication.getAction()) {
                             case "connection":
                                 out.writeObject(connection((String)communication.getBody()));
@@ -72,6 +81,11 @@ public class ServerHandler implements Runnable{
                             case "send_email":
                                 sendEmail((Email)communication.getBody());
                                 out.writeObject(new Communication("emails_saved", new ArrayList<>()));
+                                break;
+                            case "bin":
+                                Bin b = (Bin)communication.getBody();
+                                moveToBin(b.getId(),b.getEmail());
+                                out.writeObject(new Communication("bin_ok", new ArrayList<>()));
                                 break;
                         }
                     }

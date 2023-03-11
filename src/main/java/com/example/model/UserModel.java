@@ -32,7 +32,7 @@ public class UserModel {
          * try-with-resources: tu fai il try, dichiari la variabile dentro il try e
          * fa la close in automatico senza che tu debba farla nel codice
          */
-        try (ObjectOutputStream objectOut = new ObjectOutputStream(new FileOutputStream(FILE_PATH_MINT+email.hashCode()+".txt"))) {
+        try (ObjectOutputStream objectOut = new ObjectOutputStream(new FileOutputStream(FILE_PATH_MAC+email.hashCode()+".txt"))) {
             objectOut.writeObject(this.mapUserEmail.get(email));
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -47,7 +47,7 @@ public class UserModel {
     }
 
     public synchronized void readObjectFromFile(String email){
-        try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_MINT+email.hashCode()+".txt")))){
+        try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_MAC+email.hashCode()+".txt")))){
             this.mapUserEmail.put(email,(ArrayList<Email>)objectInput.readObject());
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
             this.mapUserEmail.put(email, new ArrayList<>());

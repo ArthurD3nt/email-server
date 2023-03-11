@@ -1,37 +1,35 @@
 package com.example.servermail;
 
+import com.example.bean.Bin;
 import com.example.bean.Communication;
-import com.example.bean.Email;
 
 import java.io.*;
 import java.net.*;
-import java.util.ArrayList;
-
 
 /**
  * connection
- *      --> connessione riuscita:
+ *     fatta --> connessione riuscita:
  *          --> {action: created_email,emails: []}
  *          --> {action: connection_ok, emails: [{receive: [{...}]},{sent: [{...}]},{bin: [{...}]}]}
  *      --> try - catch: server non disponibile
  *
  * send_email:
- *      --> {action: send_email_ok, emails:[]}
+ *     fatta --> {action: send_email_ok, emails:[]}
  *      --> {action: not_ok, emails:[]}
  *
  * scheduler:
  *      --> lo scheduler invia l'email ricevute dal client con timestamp maggiore dell'ultimo timestamp salvato,
- *          gira ogni tot secondi solo sui
+ *          gira ogni tot secondi solo sui client connessi
  *      --> {action: scheduler, emails:[{}]}
  *
  * bin:
  *      --> il client sposta in locale l'email eliminata, il server cerca l'email e mette bin = true
- *      --> {action: bin_ok, emails:[]}
+ *     fatta --> {action: bin_ok, emails:[]}
  *      --> {action: bin_not_ok, emails:[]}
  *
  *  delete:
  *      --> server: elimina tutte le email con bin: true, il client svuota l'arrayList solo se l'eliminazione è andata a buon fine
- *      -->
+ *
  */
 
 public class ClientMain {
@@ -45,7 +43,7 @@ public class ClientMain {
                 OutputStream outStream = s.getOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(outStream);
 
-                Communication c = new Communication("connection","email@email.com");
+                Communication c = new Communication("connection","matteo@edu.unito.it");
                 out.writeObject(c);
 
                 ObjectInputStream inStream = new ObjectInputStream(s.getInputStream());
@@ -59,15 +57,14 @@ public class ClientMain {
                             case "connection_ok":
                                 System.out.println("connection_ok");
                                 System.out.println(communication.getBody());
-                                /*ArrayList<String> receivers = new ArrayList<>();
-                                receivers.add("matteo@edu.unito.it");
-                                receivers.add("stefano@edu.unito.it");
-                                receivers.add("ale@edu.unito.it");
-                                Email e  = new Email((String)c.getBody(), receivers, "first email", "fisrt-email text");
-                                out.writeObject(new Communication("send_email", e));*/
+                                /*Bin b = new Bin("71a3cf8f-5a26-49d6-93bd-53888bc2fc22", "email@email.com");
+                                out.writeObject(new Communication("bin", b));*/
                                 break;
                             case "emails_saved":
                                 System.out.println("email salvate");
+                                break;
+                            case "bin_ok":
+                                System.out.println("bin ok");
                                 break;
                         }
                     }
