@@ -1,6 +1,7 @@
 module com.example.servermail {
     requires javafx.controls;
     requires javafx.fxml;
+    requires java.sql;
 
 
     opens com.example.servermail to javafx.fxml;

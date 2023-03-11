@@ -2,6 +2,7 @@ package com.example.bean;
 
 
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -13,7 +14,10 @@ public class Email implements Serializable {
     private String subject;
     private String text;
 
-    private Date datetime;
+    private Timestamp timestamp;
+
+    private boolean bin;
+
 
     private Email() {}
 
@@ -22,6 +26,9 @@ public class Email implements Serializable {
         this.subject = subject;
         this.text = text;
         this.receivers = new ArrayList<>(receivers);
+        Date date = new Date();
+        this.timestamp = new Timestamp(date.getTime());
+        this.bin = false;
     }
 
     public String getSender() {
@@ -40,9 +47,7 @@ public class Email implements Serializable {
         return text;
     }
 
-    public Date getDatetime() {
-        return datetime;
-    }
+
 
     public void setSender(String sender) {
         this.sender = sender;
@@ -60,8 +65,20 @@ public class Email implements Serializable {
         this.text = text;
     }
 
-    public void setDatetime(Date datetime) {
-        this.datetime = datetime;
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public boolean isBin() {
+        return bin;
+    }
+
+    public void setBin(boolean bin) {
+        this.bin = bin;
     }
 }
 

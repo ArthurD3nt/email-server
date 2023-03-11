@@ -2,6 +2,7 @@ package com.example.servermail;
 
 import com.example.bean.Communication;
 import com.example.bean.Email;
+import com.example.bean.User;
 
 import java.io.*;
 import java.net.*;
@@ -15,10 +16,14 @@ public class ServerHandler implements Runnable{
 
     private  Communication communication = null;
 
+    private Server server;
+
+    private ArrayList<User> userArrayList;
 
     public ServerHandler(Socket socket, int counter) {
         this.socket = socket;
         this.counter = counter;
+        this.server = new Server();
     }
 
     @Override
@@ -36,18 +41,18 @@ public class ServerHandler implements Runnable{
                 ObjectOutputStream out= new ObjectOutputStream(outStream);
 
                 try {
+                    communication = (Communication) in.readObject();
 
-                communication = (Communication) in.readObject();
+                    switch(communication.getAction()){
+                        case "connection":
+                            this.userArrayList = this.server.getUser();
+                            System.out.println("connection");
 
-                switch(communication.getAction()){
-                    case "connection":
-                        System.out.println(communication.getBody());
-                        out.writeObject(new Communication("ack",""));
-                        break;
-                    case "sendEmail":
-                        System.out.println("body:"+communication.getBody());
-                        break;
-                }
+                            break;
+                        case "sendEmail":
+                            System.out.println("body:"+communication.getBody());
+                            break;
+                    }
                 } catch (ClassNotFoundException e) {
                     throw new RuntimeException(e);
                 }
@@ -63,3 +68,21 @@ public class ServerHandler implements Runnable{
 
 
 }
+
+
+                                        /*switch(action){
+                case "connection":
+                   for(User u : this.user){
+
+                       if(u.getUser().equals(user)){
+                           found = true;
+                           communication = new Communication("connection_ok", u.getEmails());
+                       }
+                   }
+            }
+
+            if(!found){
+                this.user.add(new User(user,new ArrayList<Email>()));
+                this.writeObjectToFile();
+                communication  = new Communication("created_email", new ArrayList<Email>());
+            }*/
