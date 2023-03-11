@@ -12,9 +12,6 @@ public class ServerMail extends Application {
     @Override
     public void start(Stage stage) throws IOException {
 
-        Runnable serverThread = new Server();
-        new Thread(serverThread).start();
-
         FXMLLoader fxmlLoader = new FXMLLoader(ServerMail.class.getResource("hello-view.fxml"));
         Scene scene = new Scene(fxmlLoader.load(), 500, 300);
         stage.setTitle("Server log");

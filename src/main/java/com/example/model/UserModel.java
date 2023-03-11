@@ -15,6 +15,7 @@ public class UserModel {
     /*Forse è più comodo avere HashMap<string email, ArrayList<Email>()> teoricamente è più performante*/
     private HashMap<String,ArrayList<Email>> mapUserEmail = new HashMap<>(); //se non lo vuole mettiamo le if
     private final static String FILE_PATH_MAC = "/Users/matteomarengo/Documents/uni/email-server/src/main/java/com/example/email/";
+    private final static String FILE_PATH_MINT = "/home/ale/github/email-server/src/main/java/com/example/email";
 
     private UserModel() {
     }
@@ -31,7 +32,7 @@ public class UserModel {
          * try-with-resources: tu fai il try, dichiari la variabile dentro il try e
          * fa la close in automatico senza che tu debba farla nel codice
          */
-        try (ObjectOutputStream objectOut = new ObjectOutputStream(new FileOutputStream(FILE_PATH_MAC+email.hashCode()+".txt"))) {
+        try (ObjectOutputStream objectOut = new ObjectOutputStream(new FileOutputStream(FILE_PATH_MINT+email.hashCode()+".txt"))) {
             objectOut.writeObject(this.mapUserEmail.get(email));
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -46,7 +47,7 @@ public class UserModel {
     }
 
     public synchronized void readObjectFromFile(String email){
-        try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_MAC+email.hashCode()+".txt")))){
+        try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_MINT+email.hashCode()+".txt")))){
             this.mapUserEmail.put(email,(ArrayList<Email>)objectInput.readObject());
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
             this.mapUserEmail.put(email, new ArrayList<>());

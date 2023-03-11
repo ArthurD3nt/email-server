@@ -3,7 +3,10 @@ package com.example.servermail;
 import com.example.bean.Communication;
 import com.example.bean.Email;
 import com.example.bean.User;
+import com.example.model.LogModel;
 import com.example.model.UserModel;
+
+import javafx.application.Platform;
 
 import java.io.*;
 import java.net.*;
@@ -14,10 +17,12 @@ public class ServerHandler implements Runnable{
 
     private Socket socket;
     private int counter;
+    private LogModel logModel;
 
     private ArrayList<Email> emailArrayList;
 
-    public ServerHandler(Socket socket, int counter) {
+    public ServerHandler(Socket socket, int counter, LogModel logModel) {
+        this.logModel = logModel;
         this.socket = socket;
         this.counter = counter;
     }
@@ -33,7 +38,7 @@ public class ServerHandler implements Runnable{
 
 
     private void sendEmail(Email email){
-        System.out.println(email.toString());
+        logModel.setLog(email.toString());
         UserModel.getInstance().addEmailToMap(email.getSender(),email);
         for(String user : email.getReceivers())
             UserModel.getInstance().addEmailToMap(user,email);
@@ -58,8 +63,8 @@ public class ServerHandler implements Runnable{
 
                 try {
                     while(true) {
-
                         Communication communication = (Communication) in.readObject();
+                        Platform.runLater(() -> logModel.setLog(communication.toString()));
                         switch (communication.getAction()) {
                             case "connection":
                                 out.writeObject(connection((String)communication.getBody()));

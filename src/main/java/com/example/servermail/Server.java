@@ -1,16 +1,19 @@
 package com.example.servermail;
-
-import com.example.bean.Communication;
 import com.example.bean.Email;
 import com.example.bean.User;
+import com.example.model.LogModel;
 import com.example.model.UserModel;
 
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 
-public class Server implements Runnable{
+public class Server implements Runnable {
+    public LogModel logModel;
+
+    public Server(LogModel log) {
+        this.logModel = log;
+    }
 
     @Override
     public void run (){
@@ -21,7 +24,7 @@ public class Server implements Runnable{
 
          while (true) {
              Socket incoming = s.accept();
-             Runnable r = new ServerHandler(incoming, i);
+             Runnable r = new ServerHandler(incoming, i, logModel);
              new Thread(r).start();
              i++;
          }
