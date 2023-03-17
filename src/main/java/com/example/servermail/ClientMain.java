@@ -4,6 +4,7 @@ import com.example.bean.BaseBody;
 import com.example.bean.Communication;
 import com.example.bean.EmailBody;
 import com.example.bean.GetEmailsBody;
+import com.example.bean.BinBody;
 
 import java.io.*;
 import java.net.*;
@@ -38,24 +39,37 @@ import java.util.Date;
  */
 
 public class ClientMain {
+
+    private static final String EMAIL_TO_USE = "email@email.com";
+
     private static Communication testConnection(String email){
        return new Communication("connection",new BaseBody(email));
     }
     private static Communication sendEmail(){
         ArrayList<String> receivers = new ArrayList<>();
-        receivers.add("stefano@edu.unito.it");
+        receivers.add("ale@edu.unito.it");
         receivers.add("matteo@edu.unito.it");
-        receivers.add("fede@edu.unito.it");
+        receivers.add("fra@edu.unito.it");
         EmailBody e = new EmailBody("email@email.com",receivers, "email 2", "testo email 2" );
         return new Communication("send_email", e);
     }
 
     private static Communication getEmails(){
         Timestamp t = Timestamp.valueOf("2023-03-14 22:40:31.370");
-        GetEmailsBody g = new GetEmailsBody("fede@edu.unito.it",t);
+        GetEmailsBody g = new GetEmailsBody(EMAIL_TO_USE,t);
         return new Communication("get_emails", g);
     }
 
+    private static Communication moveToBin() {
+        BinBody b = new BinBody("abc13a7a-d140-46e7-8894-6ef43b8c8413", EMAIL_TO_USE);
+
+        return new Communication("bin", b);
+    }
+
+    private static Communication delete(){
+        BaseBody b = new BaseBody(EMAIL_TO_USE);
+        return new Communication("delete",b);
+    }
     public static void main(String[] args) {
         try {
             String nomeHost = InetAddress.getLocalHost().getHostName();
@@ -65,9 +79,11 @@ public class ClientMain {
             try {
                 OutputStream outStream = s.getOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(outStream);
-                //Communication c = sendEmail();
-                // Communication c = testConnection("fede@edu.unito.it");
-                Communication c = getEmails();
+                // Communication c = sendEmail();
+                Communication c = testConnection(EMAIL_TO_USE);
+                // Communication c = getEmails();
+                //Communication c = moveToBin();
+                 //Communication c = delete();
                 out.writeObject(c);
 
                 ObjectInputStream inStream = new ObjectInputStream(s.getInputStream());
@@ -77,8 +93,6 @@ public class ClientMain {
                             case "connection_ok":
                                 System.out.println("connection_ok");
                                 System.out.println(communication.getBody());
-                                /*Bin b = new Bin("71a3cf8f-5a26-49d6-93bd-53888bc2fc22", "email@email.com");
-                                out.writeObject(new Communication("bin", b));*/
                                 break;
                             case "emails_saved":
                                 System.out.println("email salvate");
@@ -89,6 +103,9 @@ public class ClientMain {
                                 break;
                             case "bin_ok":
                                 System.out.println("bin ok");
+                                break;
+                            case "delete_permanently_ok":
+                                System.out.println("delete");
                                 break;
                         }
                 } catch (ClassNotFoundException ex) {

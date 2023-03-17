@@ -24,7 +24,7 @@ public class ServerHandler implements Runnable{
         this.logModel = logModel;
         this.socket = socket;
         this.counter = counter;
-        this.userService=UserService.getInstance();
+        this.userService = UserService.getInstance();
     }
 
     private void connection(String email) throws IOException {
@@ -32,6 +32,7 @@ public class ServerHandler implements Runnable{
         if(user == null){
             user = userService.createUser(email);
         }
+
         Communication response = new Communication("connection_ok", new EmailListBody(user.getUser(),user.getEmails()));
         logModel.setLog("Client " + email + " connected");
         out.writeObject(response);
@@ -42,24 +43,26 @@ public class ServerHandler implements Runnable{
         logModel.setLog("User "+email.getSender()
                 + " sending email: "+email.getId()
                 + " to: " + email.getReceivers().stream().collect(Collectors.joining(", ")));
+
         User sender = userService.readUserFromFileBlocking(email.getSender());
+
         if(sender == null){
             userService.unlock(email.getSender());
-            //gestione sender non esistente.
-            //fatela voi a me è successo non so come
+            //gestione sender non esistente: fatela voi a me è successo non so come
             logModel.setLog("ERRORE: utente non trovato");
+            out.writeObject(new Communication("emails_not_saved",new BooleanBody(sender.getUser(),false)));
             return;
         }
+
         sender.getEmails().add(email);
         userService.writeUserToFile(sender);
 
         for (String receiver:email.getReceivers()) {
-            User userReceiver=userService.readUserFromFileBlocking(receiver);
-            if(userReceiver== null){
+            User userReceiver = userService.readUserFromFileBlocking(receiver);
+            if(userReceiver == null){
                 userService.unlock(receiver);
-                logModel.setLog("ERRORE: utente non trovato");
-                //gestione utente non esistente.
-                //fatela voi
+                logModel.setLog("ERRORE: "+ receiver + " non trovato");
+                //gestione utente non esistente: fatela voi
                 continue;
             }
             userReceiver.getEmails().add(email);
@@ -67,7 +70,6 @@ public class ServerHandler implements Runnable{
         }
 
         out.writeObject(new Communication("emails_saved",new BooleanBody(sender.getUser(),true)));
-
     }
 
     private void get_emails(GetEmailsBody getEmailsBody) throws IOException {
@@ -87,15 +89,35 @@ public class ServerHandler implements Runnable{
         out.writeObject(new Communication("get_emails_ok",new EmailListBody(getEmailsBody.getEmail(), emailBodies)));
     }
 
-    private void moveToBin(String id, String email){
+    private void moveToBin(String id, String email) throws IOException{
         User user = userService.readUserFromFileBlocking(email);
         for(EmailBody e: user.getEmails()){
             if(e.getId().equals(id)) {
                 e.setBin(true);
-                logModel.setLog("Email with id " + id + " moved to bin");
+                logModel.setLog("Client: "+ email +" moved to bin email with id " + id );
             }
         }
         userService.writeUserToFile(user);
+        out.writeObject(new Communication("bin_ok",new BooleanBody(email, true)));
+
+    }
+
+    private void deletePermanently(String email) throws IOException {
+        User user = userService.readUserFromFileBlocking(email);
+        int i;
+        if(user.getEmails().size() == 0 ){
+
+            out.writeObject(new Communication("delete_permanently_ok", new BooleanBody(email, false)));
+        }
+        for(i = 0; i < user.getEmails().size(); i++){
+            if(user.getEmails().get(i).getBin()){
+                user.getEmails().remove(i);
+                //logModel.setLog("Client: "+ email +" remove email with id " + e.getId());
+            }
+        }
+        userService.writeUserToFile(user);
+
+        out.writeObject(new Communication("delete_permanently_ok", new BooleanBody(email, true)));
     }
 
     @Override
@@ -107,7 +129,6 @@ public class ServerHandler implements Runnable{
                 * InputStream: sono i byte che ricevo in input
                 * OutputStream: sono i byte che invio in input
                 * */
-
                 InputStream inStream = socket.getInputStream();
                 in = new ObjectInputStream(inStream);
                 OutputStream outStream = socket.getOutputStream();
@@ -129,6 +150,9 @@ public class ServerHandler implements Runnable{
                             case "bin":
                                 BinBody b = (BinBody) communication.getBody();
                                 moveToBin(b.getId(), b.getEmail());
+                                break;
+                            case "delete":
+                                deletePermanently(communication.getBody().getEmail());
                                 break;
                         }
                 } catch (ClassNotFoundException e) {

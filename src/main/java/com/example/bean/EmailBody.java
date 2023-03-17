@@ -14,9 +14,7 @@ public class EmailBody extends BaseBody {
     private ArrayList<String> receivers;
     private String subject;
     private String text;
-
     private Timestamp timestamp;
-
     private boolean bin;
 
 
@@ -79,7 +77,7 @@ public class EmailBody extends BaseBody {
         this.timestamp = timestamp;
     }
 
-    public boolean isBin() {
+    public boolean getBin() {
         return bin;
     }
 
