@@ -1,11 +1,10 @@
-package com.example.servermail;
+package com.example.server.servermail;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
-import com.example.model.LogModel;
+import com.example.server.model.LogModel;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.paint.Color;
 import javafx.scene.text.TextFlow;

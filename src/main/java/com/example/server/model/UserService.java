@@ -1,6 +1,6 @@
-package com.example.model;
+package com.example.server.model;
 
-import com.example.bean.User;
+import com.example.transmission.User;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -17,7 +17,7 @@ public class UserService {
     private static HashMap<String,ReentrantReadWriteLock > filesLock=new HashMap<>();
 
 
-    private final static String FILE_PATH_MAC = "/Users/matteomarengo/Documents/uni/email-server/src/main/java/com/example/email/";
+    private final static String FILE_PATH_MAC = "/Users/matteomarengo/Documents/uni/email-server/src/main/java/com/example/server/email/";
     private final static String FILE_PATH_MINT = "/home/ale/github/email-server/src/main/java/com/example/email";
     private final static String FILE_PATH_WIN = "C:\\Users\\Stefano\\Desktop\\excentio\\test\\email-server-main\\src\\main\\java\\com\\example\\email\\";
 

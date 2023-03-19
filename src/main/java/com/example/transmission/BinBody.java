@@ -1,4 +1,4 @@
-package com.example.server.bean;
+package com.example.transmission;
 
 public class BinBody extends BaseBody {
     private String id;

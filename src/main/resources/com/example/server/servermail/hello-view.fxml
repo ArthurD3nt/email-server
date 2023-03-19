@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.VBox?>
 <?import javafx.scene.text.TextFlow?>
-
-<?import javafx.scene.control.Button?>
-<VBox alignment="CENTER" spacing="20.0" xmlns:fx="http://javafx.com/fxml" style="-fx-background-color: #232323;" fx:controller="com.example.servermail.LogController">
-    <TextFlow fx:id="logFlow" prefHeight="300.0" prefWidth="500.0" />
-</VBox>
+<?import javafx.scene.control.ScrollPane?>
+<ScrollPane xmlns:fx="http://javafx.com/fxml" style="-fx-background-color: #232323;" fx:controller="com.example.server.servermail.LogController">
+    <TextFlow fx:id="logFlow" prefHeight="300.0" prefWidth="500.0" style="-fx-background-color: #232323;"/>
+</ScrollPane>

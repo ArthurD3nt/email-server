@@ -1,16 +1,15 @@
-package com.example.servermail;
+package com.example.server.servermail;
 
-import com.example.bean.BaseBody;
-import com.example.bean.Communication;
-import com.example.bean.EmailBody;
-import com.example.bean.GetEmailsBody;
-import com.example.bean.BinBody;
+import com.example.transmission.BaseBody;
+import com.example.transmission.Communication;
+import com.example.transmission.EmailBody;
+import com.example.transmission.GetEmailsBody;
+import com.example.transmission.BinBody;
 
 import java.io.*;
 import java.net.*;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Date;
 
 /**
  * connection
@@ -40,17 +39,20 @@ import java.util.Date;
 
 public class ClientMain {
 
-    private static final String EMAIL_TO_USE = "email@email.com";
+    private static final String EMAIL_TO_USE = "matteo@edu.unito.it";
 
     private static Communication testConnection(String email){
        return new Communication("connection",new BaseBody(email));
     }
+    private static Communication get_bin_emails(String email){
+       return new Communication("get_sent_emails",new BaseBody(email));
+    }
     private static Communication sendEmail(){
         ArrayList<String> receivers = new ArrayList<>();
-        receivers.add("ale@edu.unito.it");
-        receivers.add("matteo@edu.unito.it");
-        receivers.add("fra@edu.unito.it");
-        EmailBody e = new EmailBody("email@email.com",receivers, "email 2", "testo email 2" );
+       receivers.add("ale@edu.unito.it");
+        receivers.add("email@email.com");
+       receivers.add("fra@edu.unito.it");
+        EmailBody e = new EmailBody("matteo@edu.unito.it",receivers, "email 4", "testo email 4" );
         return new Communication("send_email", e);
     }
 
@@ -79,8 +81,9 @@ public class ClientMain {
             try {
                 OutputStream outStream = s.getOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(outStream);
-                // Communication c = sendEmail();
-                Communication c = testConnection(EMAIL_TO_USE);
+                 //Communication c = sendEmail();
+                //Communication c = testConnection(EMAIL_TO_USE);
+                Communication c = get_bin_emails(EMAIL_TO_USE);
                 // Communication c = getEmails();
                 //Communication c = moveToBin();
                  //Communication c = delete();
@@ -93,6 +96,14 @@ public class ClientMain {
                         switch(communication.getAction()){
                             case "connection_ok":
                                 System.out.println("connection_ok");
+                                System.out.println(communication.getBody().toString());
+                                break;
+                            case "get_sent_emails_ok":
+                                System.out.println("get_sent_emails_ok");
+                                System.out.println(communication.getBody());
+                                break;
+                            case "get_bin_emails_ok":
+                                System.out.println("get_bin_emails_ok");
                                 System.out.println(communication.getBody());
                                 break;
                             case "emails_saved":

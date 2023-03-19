@@ -1,12 +1,11 @@
-package com.example.servermail;
+package com.example.server.servermail;
 
-import com.example.bean.*;
-import com.example.model.LogModel;
-import com.example.model.UserService;
+import com.example.server.model.LogModel;
+import com.example.server.model.UserService;
+import com.example.transmission.*;
 
 import java.io.*;
 import java.net.*;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
@@ -32,8 +31,63 @@ public class ServerHandler implements Runnable{
         if(user == null){
             user = userService.createUser(email);
         }
-        Communication response = new Communication("connection_ok", new EmailListBody(user.getUser(),user.getEmails()));
+        ArrayList<ArrayList<EmailBody>> arrayLists = new ArrayList<>();
+        ArrayList<EmailBody> emailReceived = new ArrayList<>();
+        ArrayList<EmailBody> emailSent = new ArrayList<>();
+        ArrayList<EmailBody> emailBin = new ArrayList<>();
+
+        user.getEmails().forEach(emailBody -> {
+           if(emailBody.getReceivers().contains(email) && !emailBody.getBin()){
+               emailReceived.add(emailBody);
+           }
+           else if(emailBody.getSender().equals(email) && !emailBody.getBin()){
+               emailSent.add(emailBody);
+           }
+           else if(emailBody.getBin()){
+               emailBin.add(emailBody);
+           }
+        });
+
+        arrayLists.add(emailReceived);
+        arrayLists.add(emailSent);
+        arrayLists.add(emailBin);
+
+        Communication response = new Communication("connection_ok", new ConnectionBody(user.getUser(),arrayLists));
         logModel.setLog("Client " + email + " connected");
+        out.writeObject(response);
+    }
+
+    private void getSentEmails(String email) throws IOException {
+        User user = userService.readUserFromFile(email);
+        if(user == null){
+            user = userService.createUser(email);
+        }
+        ArrayList<EmailBody> emailBodies = new ArrayList<>();
+        user.getEmails().forEach(emailBody -> {
+            if(emailBody.getSender().equals(email) && !emailBody.getBin()){
+                emailBodies.add(emailBody);
+            }
+        });
+
+        Communication response = new Communication("get_sent_emails_ok", new EmailListBody(user.getUser(),emailBodies));
+        logModel.setLog("Function getSentEmails: to: " + email);
+        out.writeObject(response);
+    }
+
+    private void getBinEmails(String email) throws IOException {
+        User user = userService.readUserFromFile(email);
+        if(user == null){
+            user = userService.createUser(email);
+        }
+        ArrayList<EmailBody> emailBodies = new ArrayList<>();
+        user.getEmails().forEach(emailBody -> {
+            if(emailBody.getBin()){
+                emailBodies.add(emailBody);
+            }
+        });
+
+        Communication response = new Communication("get_bin_emails_ok", new EmailListBody(user.getUser(),emailBodies));
+        logModel.setLog("Function getBinEmails to: " + email);
         out.writeObject(response);
     }
 
@@ -71,7 +125,7 @@ public class ServerHandler implements Runnable{
         out.writeObject(new Communication("emails_saved",new BooleanBody(sender.getUser(),true)));
     }
 
-    private void get_emails(GetEmailsBody getEmailsBody) throws IOException {
+    private void getNewEmails(GetEmailsBody getEmailsBody) throws IOException {
         User user = userService.readUserFromFile(getEmailsBody.getEmail());
         logModel.setLog("Get email by: " + getEmailsBody.getEmail());
         /*System.out.println(getEmailsBody.getTimestamp());
@@ -134,16 +188,20 @@ public class ServerHandler implements Runnable{
                 out= new ObjectOutputStream(outStream);
 
                 try {
-                        System.out.println(in);
                         Communication communication = (Communication) in.readObject();
-
 
                         switch (communication.getAction()) {
                             case "connection":
                                 connection(communication.getBody().getEmail());
                                 break;
-                            case "get_emails":
-                                get_emails((GetEmailsBody)communication.getBody());
+                            case "get_sent_emails":
+                                getSentEmails(communication.getBody().getEmail());
+                                break;
+                            case "get_bin_emails":
+                                getBinEmails(communication.getBody().getEmail());
+                                break;
+                            case "get_new_emails":
+                                getNewEmails((GetEmailsBody)communication.getBody());
                                 break;
                             case "send_email":
                                 sendEmail((EmailBody) communication.getBody());

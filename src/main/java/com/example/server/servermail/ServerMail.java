@@ -1,4 +1,4 @@
-package com.example.servermail;
+package com.example.server.servermail;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -18,9 +18,7 @@ public class ServerMail extends Application {
         stage.setTitle("Server log");
         stage.setScene(scene);
         stage.show();
-        scene.getWindow().addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, (WindowEvent e)->
-                System.exit(1)
-            );
+        scene.getWindow().addEventFilter(WindowEvent.WINDOW_CLOSE_REQUEST, (WindowEvent e)-> System.exit(1));
     }
 
     public static void main(String[] args) {

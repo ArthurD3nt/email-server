@@ -1,4 +1,4 @@
-package com.example.model;
+package com.example.server.model;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleStringProperty;

@@ -1,4 +1,4 @@
-package com.example.server.bean;
+package com.example.transmission;
 
 import java.sql.Timestamp;
 import java.util.Date;

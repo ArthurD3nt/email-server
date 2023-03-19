@@ -1,5 +1,5 @@
-package com.example.servermail;
-import com.example.model.LogModel;
+package com.example.server.servermail;
+import com.example.server.model.LogModel;
 
 import java.io.*;
 import java.net.ServerSocket;
