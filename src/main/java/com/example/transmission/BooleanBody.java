@@ -1,4 +1,4 @@
-package com.example.bean;
+package com.example.server.bean;
 
 public class BooleanBody  extends BaseBody {
     private boolean result ;

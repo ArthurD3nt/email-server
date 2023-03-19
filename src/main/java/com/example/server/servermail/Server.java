@@ -21,6 +21,7 @@ public class Server implements Runnable {
 
          while (true) {
              Socket incoming = s.accept();
+             logModel.setLog("thread: "+i);
              Runnable r = new ServerHandler(incoming, i, logModel);
              new Thread(r).start();
              i++;

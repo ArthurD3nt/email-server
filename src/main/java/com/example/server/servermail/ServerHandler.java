@@ -32,7 +32,6 @@ public class ServerHandler implements Runnable{
         if(user == null){
             user = userService.createUser(email);
         }
-
         Communication response = new Communication("connection_ok", new EmailListBody(user.getUser(),user.getEmails()));
         logModel.setLog("Client " + email + " connected");
         out.writeObject(response);
@@ -112,7 +111,7 @@ public class ServerHandler implements Runnable{
         for(i = 0; i < user.getEmails().size(); i++){
             if(user.getEmails().get(i).getBin()){
                 user.getEmails().remove(i);
-                //logModel.setLog("Client: "+ email +" remove email with id " + e.getId());
+                logModel.setLog("Client: "+ email +" remove email with id " + user.getEmails().get(i).getId());
             }
         }
         userService.writeUserToFile(user);
@@ -135,7 +134,9 @@ public class ServerHandler implements Runnable{
                 out= new ObjectOutputStream(outStream);
 
                 try {
+                        System.out.println(in);
                         Communication communication = (Communication) in.readObject();
+
 
                         switch (communication.getAction()) {
                             case "connection":

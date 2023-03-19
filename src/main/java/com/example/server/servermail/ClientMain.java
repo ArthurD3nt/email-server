@@ -86,6 +86,7 @@ public class ClientMain {
                  //Communication c = delete();
                 out.writeObject(c);
 
+
                 ObjectInputStream inStream = new ObjectInputStream(s.getInputStream());
                 try {
                         Communication communication = (Communication) inStream.readObject();
