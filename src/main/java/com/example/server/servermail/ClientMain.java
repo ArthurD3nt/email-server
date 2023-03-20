@@ -1,10 +1,6 @@
 package com.example.server.servermail;
 
-import com.example.transmission.BaseBody;
-import com.example.transmission.Communication;
-import com.example.transmission.EmailBody;
-import com.example.transmission.GetEmailsBody;
-import com.example.transmission.BinBody;
+import com.example.transmission.*;
 
 import java.io.*;
 import java.net.*;
@@ -63,7 +59,7 @@ public class ClientMain {
     }
 
     private static Communication moveToBin() {
-        BinBody b = new BinBody("abc13a7a-d140-46e7-8894-6ef43b8c8413", EMAIL_TO_USE);
+        BinBody b = new BinBody("751d92b7-10ab-4f59-9fc7-bcd83e460215", EMAIL_TO_USE);
 
         return new Communication("bin", b);
     }
@@ -81,12 +77,12 @@ public class ClientMain {
             try {
                 OutputStream outStream = s.getOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(outStream);
-                 //Communication c = sendEmail();
-                //Communication c = testConnection(EMAIL_TO_USE);
-                Communication c = get_bin_emails(EMAIL_TO_USE);
+                // Communication c = sendEmail();
+                Communication c = testConnection(EMAIL_TO_USE);
+                // Communication c = get_bin_emails(EMAIL_TO_USE);
                 // Communication c = getEmails();
-                //Communication c = moveToBin();
-                 //Communication c = delete();
+                // Communication c = moveToBin();
+                // Communication c = delete();
                 out.writeObject(c);
 
 
@@ -96,7 +92,7 @@ public class ClientMain {
                         switch(communication.getAction()){
                             case "connection_ok":
                                 System.out.println("connection_ok");
-                                System.out.println(communication.getBody().toString());
+                                System.out.println(((ConnectionBody)communication.getBody()).getEmails());
                                 break;
                             case "get_sent_emails_ok":
                                 System.out.println("get_sent_emails_ok");

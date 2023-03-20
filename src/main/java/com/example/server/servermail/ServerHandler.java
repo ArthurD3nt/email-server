@@ -37,7 +37,12 @@ public class ServerHandler implements Runnable{
         ArrayList<EmailBody> emailBin = new ArrayList<>();
 
         user.getEmails().forEach(emailBody -> {
-           if(emailBody.getReceivers().contains(email) && !emailBody.getBin()){
+           if(emailBody.getReceivers().contains(email) && emailBody.getSender().equals(email) && !emailBody.getBin())
+           {
+               emailReceived.add(emailBody);
+               emailSent.add(emailBody);
+           }
+           else if(emailBody.getReceivers().contains(email) && !emailBody.getBin()){
                emailReceived.add(emailBody);
            }
            else if(emailBody.getSender().equals(email) && !emailBody.getBin()){
@@ -118,6 +123,11 @@ public class ServerHandler implements Runnable{
                 //gestione utente non esistente: fatela voi
                 continue;
             }
+            else if(receiver.equals(email.getSender())) {
+                userService.unlock(receiver);
+                logModel.setLog("RECEIVER: "+ receiver + " uguale a sender: " + email.getSender());
+                continue;
+            }
             userReceiver.getEmails().add(email);
             userService.writeUserToFile(userReceiver);
         }
@@ -159,8 +169,7 @@ public class ServerHandler implements Runnable{
         User user = userService.readUserFromFileBlocking(email);
         int i;
         if(user.getEmails().size() == 0 ){
-
-            out.writeObject(new Communication("delete_permanently_ok", new BooleanBody(email, false)));
+            out.writeObject(new Communication("delete_permanently_not_ok", new BooleanBody(email, false)));
         }
         for(i = 0; i < user.getEmails().size(); i++){
             if(user.getEmails().get(i).getBin()){
