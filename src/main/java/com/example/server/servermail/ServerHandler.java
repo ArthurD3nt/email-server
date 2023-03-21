@@ -27,10 +27,14 @@ public class ServerHandler implements Runnable{
     }
 
     private void connection(String email) throws IOException {
+        logModel.setLog("Client " + email + " connected");
         User user = userService.readUserFromFile(email);
+
         if(user == null){
+            logModel.setLog("Client " + email + ":null, created!");
             user = userService.createUser(email);
         }
+
         ArrayList<ArrayList<EmailBody>> arrayLists = new ArrayList<>();
         ArrayList<EmailBody> emailReceived = new ArrayList<>();
         ArrayList<EmailBody> emailSent = new ArrayList<>();
@@ -58,7 +62,7 @@ public class ServerHandler implements Runnable{
         arrayLists.add(emailBin);
 
         Communication response = new Communication("connection_ok", new ConnectionBody(user.getUser(),arrayLists));
-        logModel.setLog("Client " + email + " connected");
+
         out.writeObject(response);
     }
 
@@ -138,9 +142,6 @@ public class ServerHandler implements Runnable{
     private void getNewEmails(GetEmailsBody getEmailsBody) throws IOException {
         User user = userService.readUserFromFile(getEmailsBody.getEmail());
         logModel.setLog("Get email by: " + getEmailsBody.getEmail());
-        /*System.out.println(getEmailsBody.getTimestamp());
-        System.out.println(Timestamp.valueOf("2023-03-14 22:40:31.371"));
-        System.out.println(getEmailsBody.getTimestamp().equals(Timestamp.valueOf("2023-03-14 22:40:31.371")));*/
 
         ArrayList<EmailBody> emailBodies = new ArrayList<>();
         for(EmailBody e: user.getEmails()){
@@ -168,9 +169,11 @@ public class ServerHandler implements Runnable{
     private void deletePermanently(String email) throws IOException {
         User user = userService.readUserFromFileBlocking(email);
         int i;
+
         if(user.getEmails().size() == 0 ){
             out.writeObject(new Communication("delete_permanently_not_ok", new BooleanBody(email, false)));
         }
+
         for(i = 0; i < user.getEmails().size(); i++){
             if(user.getEmails().get(i).getBin()){
                 user.getEmails().remove(i);

@@ -15,7 +15,7 @@ public class LogModel {
     }
 
     public void setLog(String newLine) {
-        Platform.runLater(()->   log.set(newLine));
+        Platform.runLater(()-> log.set(newLine));
 
     }
 }

@@ -14,7 +14,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class UserService {
     private static UserService instance = null;
 
-    private static HashMap<String,ReentrantReadWriteLock > filesLock=new HashMap<>();
+    private static HashMap<String,ReentrantReadWriteLock > filesLock = new HashMap<>();
 
 
     private final static String FILE_PATH_MAC = "/Users/matteomarengo/Documents/uni/email-server/src/main/java/com/example/server/email/";
@@ -45,13 +45,14 @@ public class UserService {
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
-
+            /*TODO: GESTIRE CASO DI ERRORE*/
         }finally {
             read.unlock();
         }
         return null;
 
     }
+
     public User readUserFromFileBlocking(String email){
         blockWrite(email);
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
@@ -101,6 +102,7 @@ public class UserService {
         }
         write.unlock();
     }
+
     public synchronized void writeUserToFile(User user) {
         /**
          * try-with-resources: tu fai il try, dichiari la variabile dentro il try e
