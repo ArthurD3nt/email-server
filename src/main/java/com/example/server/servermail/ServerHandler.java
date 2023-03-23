@@ -168,17 +168,18 @@ public class ServerHandler implements Runnable{
 
     private void deletePermanently(String email) throws IOException {
         User user = userService.readUserFromFileBlocking(email);
-        int i;
+        int i = 0;;
 
         if(user.getEmails().size() == 0 ){
             out.writeObject(new Communication("delete_permanently_not_ok", new BooleanBody(email, false)));
         }
 
-        for(i = 0; i < user.getEmails().size(); i++){
+        while(i < user.getEmails().size()){
             if(user.getEmails().get(i).getBin()){
-                user.getEmails().remove(i);
                 logModel.setLog("Client: "+ email +" remove email with id " + user.getEmails().get(i).getId());
+                user.getEmails().remove(i);
             }
+            else { i++;}
         }
         userService.writeUserToFile(user);
 

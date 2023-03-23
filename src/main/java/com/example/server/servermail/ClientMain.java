@@ -78,7 +78,7 @@ public class ClientMain {
                 OutputStream outStream = s.getOutputStream();
                 ObjectOutputStream out = new ObjectOutputStream(outStream);
                 // Communication c = sendEmail();
-                Communication c = testConnection(EMAIL_TO_USE);
+                 Communication c = testConnection(EMAIL_TO_USE);
                 // Communication c = get_bin_emails(EMAIL_TO_USE);
                 // Communication c = getEmails();
                 // Communication c = moveToBin();
