@@ -23,7 +23,7 @@ public class ServerHandler implements Runnable{
         this.logModel = logModel;
         this.socket = socket;
         this.counter = counter;
-        this.userService = UserService.getInstance();
+        this.userService = UserService.getInstance(logModel);
     }
 
     private void connection(String email) throws IOException {

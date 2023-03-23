@@ -14,21 +14,23 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class UserService {
     private static UserService instance = null;
 
+    private LogModel logModel;
+
     private static HashMap<String,ReentrantReadWriteLock > filesLock = new HashMap<>();
 
 
     private final static String FILE_PATH_MAC = "/Users/matteomarengo/Documents/uni/email-server/src/main/java/com/example/server/email/";
     private final static String FILE_PATH_MINT = "/home/ale/github/email-server/src/main/java/com/example/email";
-    private final static String FILE_PATH_WIN = "C:\\Users\\Stefano\\Desktop\\excentio\\test\\email-server-main\\src\\main\\java\\com\\example\\email\\";
+    private final static String FILE_PATH_WIN = "/home/frama/git/email-server/src/main/java/com/example/server/email/";
 
-    private String FILE_PATH_TO_USE = FILE_PATH_MAC;
-    private UserService() {
-
+    private String FILE_PATH_TO_USE = FILE_PATH_WIN;
+    private UserService(LogModel logModel) {
+        this.logModel = logModel;
     }
 
-    public static synchronized UserService getInstance(){
+    public static synchronized UserService getInstance(LogModel logModel){
         if(instance == null)
-            instance = new UserService();
+            instance = new UserService(logModel);
         return instance;
     }
 
@@ -45,6 +47,7 @@ public class UserService {
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
+            logModel.setLog("ERROR: file" + FILE_PATH_TO_USE+email.toLowerCase() + "not found");
             /*TODO: GESTIRE CASO DI ERRORE*/
         }finally {
             read.unlock();
@@ -58,7 +61,8 @@ public class UserService {
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
-
+            logModel.setLog("ERROR: file " + FILE_PATH_TO_USE+email.toLowerCase() + ".txt not found");
+            /*TODO: GESTIRE CASO DI ERRORE*/
         }
         return null;
 

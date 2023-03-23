@@ -35,7 +35,7 @@ import java.util.ArrayList;
 
 public class ClientMain {
 
-    private static final String EMAIL_TO_USE = "matteo@edu.unito.it";
+    private static final String EMAIL_TO_USE = "giovanni@edu.unito.it";
 
     private static Communication testConnection(String email){
        return new Communication("connection",new BaseBody(email));
