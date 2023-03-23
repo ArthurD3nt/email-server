@@ -1,6 +1,6 @@
 package com.example.server.model;
 
-import com.example.transmission.User;
+import com.example.transmission.*;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -15,6 +15,7 @@ public class UserService {
     private static UserService instance = null;
 
     private LogModel logModel;
+    ObjectOutputStream out;
 
     private static HashMap<String,ReentrantReadWriteLock > filesLock = new HashMap<>();
 
@@ -24,13 +25,14 @@ public class UserService {
     private final static String FILE_PATH_WIN = "/home/frama/git/email-server/src/main/java/com/example/server/email/";
 
     private String FILE_PATH_TO_USE = FILE_PATH_WIN;
-    private UserService(LogModel logModel) {
+    private UserService(LogModel logModel, ObjectOutputStream out) {
         this.logModel = logModel;
+        this.out = out;
     }
 
-    public static synchronized UserService getInstance(LogModel logModel){
+    public static synchronized UserService getInstance(LogModel logModel, ObjectOutputStream out){
         if(instance == null)
-            instance = new UserService(logModel);
+            instance = new UserService(logModel, out);
         return instance;
     }
 
@@ -41,31 +43,31 @@ public class UserService {
         writeUserToFile(u);
         return u;
     }
-    public User readUserFromFile(String email){
+    public User readUserFromFile(String email) throws IOException{
         Lock read = blockRead(email);
         read.lock();
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
+            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
             logModel.setLog("ERROR: file" + FILE_PATH_TO_USE+email.toLowerCase() + "not found");
-            /*TODO: GESTIRE CASO DI ERRORE*/
+            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
         }finally {
             read.unlock();
         }
         return null;
-
     }
 
-    public User readUserFromFileBlocking(String email){
+    public User readUserFromFileBlocking(String email) throws IOException{
         blockWrite(email);
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
+            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
             logModel.setLog("ERROR: file " + FILE_PATH_TO_USE+email.toLowerCase() + ".txt not found");
-            /*TODO: GESTIRE CASO DI ERRORE*/
+            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
         }
         return null;
-
     }
 
     private synchronized Lock blockRead(String email){

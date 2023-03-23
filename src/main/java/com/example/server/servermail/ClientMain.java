@@ -115,6 +115,9 @@ public class ClientMain {
                             case "delete_permanently_ok":
                                 System.out.println("delete");
                                 break;
+                            case "server_error":
+                                System.out.println("Server error");
+                                break;
                         }
                 } catch (ClassNotFoundException ex) {
                     throw new RuntimeException(ex);
