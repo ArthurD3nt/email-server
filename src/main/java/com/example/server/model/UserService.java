@@ -15,57 +15,52 @@ public class UserService {
     private static UserService instance = null;
 
     private LogModel logModel;
-    ObjectOutputStream out;
 
     private static HashMap<String,ReentrantReadWriteLock > filesLock = new HashMap<>();
-
 
     private final static String FILE_PATH_MAC = "/Users/matteomarengo/Documents/uni/email-server/src/main/java/com/example/server/email/";
     private final static String FILE_PATH_MINT = "/home/ale/github/email-server/src/main/java/com/example/email";
     private final static String FILE_PATH_WIN = "/home/frama/git/email-server/src/main/java/com/example/server/email/";
 
-    private String FILE_PATH_TO_USE = FILE_PATH_WIN;
-    private UserService(LogModel logModel, ObjectOutputStream out) {
+    private String FILE_PATH_TO_USE = FILE_PATH_MAC;
+    private UserService(LogModel logModel) {
         this.logModel = logModel;
-        this.out = out;
     }
 
-    public static synchronized UserService getInstance(LogModel logModel, ObjectOutputStream out){
+    public static synchronized UserService getInstance(LogModel logModel){
         if(instance == null)
-            instance = new UserService(logModel, out);
+            instance = new UserService(logModel);
         return instance;
     }
 
-    /* questa classe scrive su file tutto l'array di user */
+
     public User createUser(String email){
         blockWrite(email);
-        User u=new User(email,new ArrayList<>());
+        User u = new User(email,new ArrayList<>());
         writeUserToFile(u);
         return u;
     }
+
     public User readUserFromFile(String email) throws IOException{
         Lock read = blockRead(email);
         read.lock();
+        
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
-            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
             logModel.setLog("ERROR: file" + FILE_PATH_TO_USE+email.toLowerCase() + "not found");
-            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
         }finally {
             read.unlock();
         }
         return null;
     }
 
-    public User readUserFromFileBlocking(String email) throws IOException{
+    public User readUserFromFileBlocking(String email){
         blockWrite(email);
         try(ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE+email.toLowerCase()+".txt")))){
-            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
             return (User)objectInput.readObject();
         } catch ( IOException | ClassNotFoundException fileNotFoundException) {
             logModel.setLog("ERROR: file " + FILE_PATH_TO_USE+email.toLowerCase() + ".txt not found");
-            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
         }
         return null;
     }

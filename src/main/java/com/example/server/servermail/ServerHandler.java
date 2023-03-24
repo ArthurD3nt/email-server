@@ -23,7 +23,7 @@ public class ServerHandler implements Runnable{
         this.logModel = logModel;
         this.socket = socket;
         this.counter = counter;
-        this.userService = UserService.getInstance(logModel, out);
+        this.userService = UserService.getInstance(logModel);
     }
 
     private void connection(String email) throws IOException {
@@ -63,40 +63,6 @@ public class ServerHandler implements Runnable{
 
         Communication response = new Communication("connection_ok", new ConnectionBody(user.getUser(),arrayLists));
 
-        out.writeObject(response);
-    }
-
-    private void getSentEmails(String email) throws IOException {
-        User user = userService.readUserFromFile(email);
-        if(user == null){
-            user = userService.createUser(email);
-        }
-        ArrayList<EmailBody> emailBodies = new ArrayList<>();
-        user.getEmails().forEach(emailBody -> {
-            if(emailBody.getSender().equals(email) && !emailBody.getBin()){
-                emailBodies.add(emailBody);
-            }
-        });
-
-        Communication response = new Communication("get_sent_emails_ok", new EmailListBody(user.getUser(),emailBodies));
-        logModel.setLog("Function getSentEmails: to: " + email);
-        out.writeObject(response);
-    }
-
-    private void getBinEmails(String email) throws IOException {
-        User user = userService.readUserFromFile(email);
-        if(user == null){
-            user = userService.createUser(email);
-        }
-        ArrayList<EmailBody> emailBodies = new ArrayList<>();
-        user.getEmails().forEach(emailBody -> {
-            if(emailBody.getBin()){
-                emailBodies.add(emailBody);
-            }
-        });
-
-        Communication response = new Communication("get_bin_emails_ok", new EmailListBody(user.getUser(),emailBodies));
-        logModel.setLog("Function getBinEmails to: " + email);
         out.writeObject(response);
     }
 
@@ -145,7 +111,7 @@ public class ServerHandler implements Runnable{
 
         ArrayList<EmailBody> emailBodies = new ArrayList<>();
         for(EmailBody e: user.getEmails()){
-            if(e.getTimestamp().after(getEmailsBody.getTimestamp())) {
+            if(e.getTimestamp().after(getEmailsBody.getTimestamp()) && !e.getBin()) {
               emailBodies.add(e);
             }
         }
@@ -201,17 +167,13 @@ public class ServerHandler implements Runnable{
                 out= new ObjectOutputStream(outStream);
 
                 try {
+                        if(in == null || out == null) return;
+
                         Communication communication = (Communication) in.readObject();
 
                         switch (communication.getAction()) {
                             case "connection":
                                 connection(communication.getBody().getEmail());
-                                break;
-                            case "get_sent_emails":
-                                getSentEmails(communication.getBody().getEmail());
-                                break;
-                            case "get_bin_emails":
-                                getBinEmails(communication.getBody().getEmail());
                                 break;
                             case "get_new_emails":
                                 getNewEmails((GetEmailsBody)communication.getBody());
