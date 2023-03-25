@@ -145,8 +145,8 @@ public class ServerHandler implements Runnable{
 
         ArrayList<EmailBody> emailBodies = new ArrayList<>();
         for(EmailBody e: user.getEmails()){
-            if(e.getTimestamp().after(getEmailsBody.getTimestamp())) {
-              emailBodies.add(e);
+            if(e.getTimestamp().after(getEmailsBody.getTimestamp()) && (!getEmailsBody.getEmail().equals(e.getSender())) || e.getSender().equals(e.getReceivers().get(0))) {
+                emailBodies.add(e);
             }
         }
 
