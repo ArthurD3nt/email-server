@@ -18,11 +18,15 @@ public class ServerHandler implements Runnable {
     private int counter;
     private LogModel logModel;
     private UserService userService;
+    ArrayList<String> checkExist;
+    User userReceiver;
 
     public ServerHandler(Socket socket, int counter, LogModel logModel) {
         this.logModel = logModel;
         this.socket = socket;
         this.counter = counter;
+        this.userReceiver = null;
+        this.checkExist = new ArrayList<>();
 
         try {
 //            try {
@@ -81,6 +85,7 @@ public class ServerHandler implements Runnable {
 
     private void sendEmail(EmailBody email) throws IOException {
         // blocco il file del sender
+        this.checkExist.clear();
         logModel.setLog("User " + email.getSender()
                 + " sending email: " + email.getId()
                 + " to: " + email.getReceivers().stream().collect(Collectors.joining(", ")));
@@ -99,22 +104,30 @@ public class ServerHandler implements Runnable {
         userService.writeUserToFile(sender);
 
         for (String receiver : email.getReceivers()) {
-            User userReceiver = userService.readUserFromFileBlocking(receiver);
-            if (userReceiver == null) {
+            try{
+            this.userReceiver = userService.readUserFromFileBlocking(receiver);
+            }catch (Exception e){
                 userService.unlock(receiver);
                 logModel.setLog("ERRORE: " + receiver + " non trovato");
-                //gestione utente non esistente: fatela voi
-                continue;
-            } else if (receiver.equals(email.getSender())) {
+                checkExist.add(receiver);
+            }
+            if (receiver.equals(email.getSender())) {
                 userService.unlock(receiver);
                 logModel.setLog("RECEIVER: " + receiver + " uguale a sender: " + email.getSender());
                 continue;
             }
-            userReceiver.getEmails().add(email);
-            userService.writeUserToFile(userReceiver);
+            if(userReceiver != null){
+                userReceiver.getEmails().add(email);
+                userService.writeUserToFile(userReceiver);
+            }
         }
 
-        out.writeObject(new Communication("emails_saved", new BooleanBody(sender.getUser(), true)));
+        if(this.checkExist.size() > 0){
+            out.writeObject(new Communication("emails_not_saved",new EmailBody(null, checkExist, null, null)));
+        }
+        else{
+        out.writeObject(new Communication("emails_saved",new BooleanBody(sender.getUser(),true)));
+        }
     }
 
     private void getNewEmails(GetEmailsBody getEmailsBody) throws IOException {
