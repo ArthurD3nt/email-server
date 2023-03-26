@@ -29,16 +29,10 @@ public class ServerHandler implements Runnable {
         this.checkExist = new ArrayList<>();
 
         try {
-//            try {
                 InputStream inStream = socket.getInputStream();
                 in = new ObjectInputStream(inStream);
                 OutputStream outStream = socket.getOutputStream();
                 out = new ObjectOutputStream(outStream);
-//            } finally {
-//                System.out.println("FINITO");
-//                logModel.setLog("Client disconnected");
-//                socket.close();
-//            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -100,9 +94,6 @@ public class ServerHandler implements Runnable {
             return;
         }
 
-        sender.getEmails().add(email);
-        userService.writeUserToFile(sender);
-
         for (String receiver : email.getReceivers()) {
             try{
             this.userReceiver = userService.readUserFromFileBlocking(receiver);
@@ -120,8 +111,12 @@ public class ServerHandler implements Runnable {
                 userReceiver.getEmails().add(email);
                 userService.writeUserToFile(userReceiver);
             }
-        }
 
+        }
+        if(this.checkExist.size() < email.getReceivers().size()){
+            sender.getEmails().add(email);
+            userService.writeUserToFile(sender);
+        }
         if(this.checkExist.size() > 0){
             out.writeObject(new Communication("emails_not_saved",new EmailBody(null, checkExist, null, null)));
         }
@@ -136,7 +131,7 @@ public class ServerHandler implements Runnable {
 
         ArrayList<EmailBody> emailBodies = new ArrayList<>();
         for (EmailBody e : user.getEmails()) {
-            if (e.getTimestamp().after(getEmailsBody.getTimestamp()) && !e.getBin() && (!getEmailsBody.getEmail().equals(e.getSender())) || e.getSender().equals(e.getReceivers().get(0))) {
+            if (e.getTimestamp().after(getEmailsBody.getTimestamp()) && (!getEmailsBody.getEmail().equals(e.getSender())) || e.getSender().equals(e.getReceivers().get(0))) {
                 emailBodies.add(e);
             }
         }
