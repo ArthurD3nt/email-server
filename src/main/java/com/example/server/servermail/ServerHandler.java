@@ -47,9 +47,8 @@ public class ServerHandler implements Runnable {
 
 		if (user == null) {
 			logModel.setLog("Client " + email + " :null, created!");
-			userService.createUser(email);
-			out.writeObject(new Communication("user_created", new ErrorBody(email, "user not found")));
-			return;
+			user = userService.createUser(email);
+			//out.writeObject(new Communication("user_created", new ErrorBody(email, "user not found")));
 		}
 
 		ArrayList<ArrayList<EmailBody>> arrayLists = new ArrayList<>();
@@ -78,8 +77,63 @@ public class ServerHandler implements Runnable {
 		out.writeObject(response);
 	}
 
+	// private void sendEmail(EmailBody email) throws IOException {
+	// 	this.checkExist.clear();
+	// 	logModel.setLog("User " + email.getSender()
+	// 			+ " sending email: " + email.getId()
+	// 			+ " to: " + email.getReceivers().stream().collect(Collectors.joining(", ")));
+
+	// 	// blocco il file del sender
+	// 	User sender = userService.readUserFromFileBlocking(email.getSender());
+
+	// 	if (sender == null) {
+	// 		userService.unlock(email.getSender());
+	// 		logModel.setLog("ERRORE: sender non trovato");
+	// 		out.writeObject(new Communication("emails_not_saved", new BooleanBody(sender.getUser(), false)));
+	// 		return;
+	// 	}
+
+	// 	for (String receiver : email.getReceivers()) {
+	// 		try {
+	// 			this.userReceiver = userService.readUserFromFileBlocking(receiver);
+
+	// 			/* Gestione sender uguale a receiver: altrimenti scrive due volte sullo stesso file */
+	// 			if (receiver.equals(email.getSender())) {
+	// 				userService.unlock(receiver);
+	// 				continue;
+	// 			}
+
+	// 			/* Se il receiver non è null allora scrivo sul file e poi fa l'unlock da solo*/
+	// 			if (userReceiver != null) {
+	// 				userReceiver.getEmails().add(email);
+	// 				userService.writeUserToFile(userReceiver);
+	// 			}
+
+	// 		} catch (Exception e) {
+	// 			userService.unlock(receiver);
+	// 			logModel.setLog("ERRORE: " + receiver + " non trovato");
+	// 			checkExist.add(receiver);
+	// 		}
+
+	// 	}
+
+	// 	/* Se invia l'email almeno ad un receiver me la salvo tra le inviate*/
+	// 	if (this.checkExist.size() < email.getReceivers().size() && this.checkExist.size() > 0) {
+	// 		sender.getEmails().add(email);
+	// 		userService.writeUserToFile(sender);
+	// 		out.writeObject(new Communication("emails_saved_with_error", new EmailBody(null, checkExist, null, null)));
+	// 	}
+	// 	else if (this.checkExist.size() == email.getReceivers().size()) {
+	// 		out.writeObject(new Communication("emails_not_saved", new EmailBody(null, checkExist, null, null)));
+	// 	} else {
+	// 		out.writeObject(new Communication("emails_saved", new BooleanBody(sender.getUser(), true)));
+	// 	}
+	// }
+
 	private void sendEmail(EmailBody email) throws IOException {
-		this.checkExist.clear();
+
+		ArrayList<String> receiversNotExists = new ArrayList<>();
+
 		logModel.setLog("User " + email.getSender()
 				+ " sending email: " + email.getId()
 				+ " to: " + email.getReceivers().stream().collect(Collectors.joining(", ")));
@@ -89,44 +143,44 @@ public class ServerHandler implements Runnable {
 
 		if (sender == null) {
 			userService.unlock(email.getSender());
-			logModel.setLog("ERRORE: sender non trovato");
+			logModel.setLog("ERRORE: utente non trovato");
 			out.writeObject(new Communication("emails_not_saved", new BooleanBody(sender.getUser(), false)));
 			return;
 		}
 
 		for (String receiver : email.getReceivers()) {
-			try {
-				this.userReceiver = userService.readUserFromFileBlocking(receiver);
 
-				/* Gestione sender uguale a receiver: altrimenti scrive due volte sullo stesso file */
-				if (receiver.equals(email.getSender())) {
-					userService.unlock(receiver);
-					continue;
-				}
+			User userReceiver = userService.readUserFromFileBlocking(receiver);
 
-				/* Se il receiver non è null allora scrivo sul file e poi fa l'unlock da solo*/
-				if (userReceiver != null) {
-					userReceiver.getEmails().add(email);
-					userService.writeUserToFile(userReceiver);
-				}
-
-			} catch (Exception e) {
+			if (receiver.equals(email.getSender())) {
+				userService.unlock(receiver);
+				logModel.setLog("RECEIVER: " + receiver + " uguale a sender: " + email.getSender());
+				continue;
+			}
+			else if (userReceiver == null) {
 				userService.unlock(receiver);
 				logModel.setLog("ERRORE: " + receiver + " non trovato");
-				checkExist.add(receiver);
+				receiversNotExists.add(receiver);
+				continue;
 			}
 
+			userReceiver.getEmails().add(email);
+			userService.writeUserToFile(userReceiver);
 		}
 
-		/* Se invia l'email almeno ad un receiver me la salvo tra le inviate*/
-		if (this.checkExist.size() < email.getReceivers().size() && this.checkExist.size() > 0) {
+		if(receiversNotExists.size() > 0 && receiversNotExists.size() == email.getReceivers().size()){
+			out.writeObject(new Communication("emails_not_saved", new EmailBody(email.getEmail(), receiversNotExists, null, null)));
+		}
+		else if(receiversNotExists.size() > 0 && receiversNotExists.size() < email.getReceivers().size()){
+			/* Salva l'email solo se trova almeno un receiver*/
 			sender.getEmails().add(email);
 			userService.writeUserToFile(sender);
-			out.writeObject(new Communication("emails_saved_with_error", new EmailBody(null, checkExist, null, null)));
+			out.writeObject(new Communication("emails_saved_with_error", new EmailBody(email.getEmail(), receiversNotExists, null, null)));
 		}
-		else if (this.checkExist.size() == email.getReceivers().size()) {
-			out.writeObject(new Communication("emails_not_saved", new EmailBody(null, checkExist, null, null)));
-		} else {
+		else {
+			/* Salva l'email perché ha trovato tutti i receiver */
+			sender.getEmails().add(email);
+			userService.writeUserToFile(sender);
 			out.writeObject(new Communication("emails_saved", new BooleanBody(sender.getUser(), true)));
 		}
 	}
@@ -142,15 +196,22 @@ public class ServerHandler implements Runnable {
 		}
 
 		for (EmailBody e : user.getEmails()) {
-			/* IF:
-			* 1. controllo se il timestamp dell'email inviata è null
-			* 	 oppure il timestamp è dell'email che leggo è minore del timestamp dell'email inviata
-			*
-			* 2. se nell'email inviata non sono io il sender oppure sono tra i receiver
-			*
-			* aggiungo l'email
-			* */
-			if ((getEmailsBody.getTimestamp() == null || e.getTimestamp().after(getEmailsBody.getTimestamp())) && (!getEmailsBody.getEmail().equals(e.getSender()) || e.getReceivers().contains(getEmailsBody.getEmail()))) {
+			if (user.getEmails().isEmpty()) {
+				out.writeObject(new Communication("no_emails", new EmailListBody(getEmailsBody.getEmail(), emailBodies)));
+				return;
+			}
+
+			/* if:
+			 * 1. controllo se il timestamp dell'email inviata è null
+			 * 	 oppure il timestamp è dell'email che leggo è minore del timestamp dell'email inviata
+			 *
+			 * 2. se nell'email inviata non sono io il sender oppure sono tra i receiver
+			 *
+			 * aggiungo l'email
+			 * */
+			if ((getEmailsBody.getTimestamp() == null || e.getTimestamp().after(getEmailsBody.getTimestamp())) 
+			/*&& 
+			(!getEmailsBody.getEmail().equals(e.getSender()) || e.getReceivers().contains(getEmailsBody.getEmail()))*/) {
 				emailBodies.add(e);
 			}
 		}
@@ -202,10 +263,6 @@ public class ServerHandler implements Runnable {
 				 * InputStream: sono i byte che ricevo in input
 				 * OutputStream: sono i byte che invio in input
 				 * */
-//                InputStream inStream = socket.getInputStream();
-//                in = new ObjectInputStream(inStream);
-//                OutputStream outStream = socket.getOutputStream();
-//                out= new ObjectOutputStream(outStream)
 
 				try {
 					if (in == null || out == null) return;
