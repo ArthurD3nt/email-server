@@ -169,6 +169,7 @@ public class ServerHandler implements Runnable {
 		}
 
 		if(receiversNotExists.size() > 0 && receiversNotExists.size() == email.getReceivers().size()){
+			userService.unlock(email.getSender());
 			out.writeObject(new Communication("emails_not_saved", new EmailBody(email.getEmail(), receiversNotExists, null, null)));
 		}
 		else if(receiversNotExists.size() > 0 && receiversNotExists.size() < email.getReceivers().size()){

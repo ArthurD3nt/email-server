@@ -65,7 +65,6 @@ public class UserService {
             return (User) objectInput.readObject();
         } catch (IOException | ClassNotFoundException fileNotFoundException) {
             logModel.setLog("ERROR: file " + FILE_PATH_TO_USE + email.toLowerCase() + ".txt not found");
-            out.writeObject(new Communication("server_error", new ErrorBody(email,"fileNotFoundException")));
         }
         return null;
     }
