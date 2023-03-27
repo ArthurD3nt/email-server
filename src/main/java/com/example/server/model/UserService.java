@@ -23,7 +23,7 @@ public class UserService {
     private final static String FILE_PATH_MINT = "/home/ale/github/email-server/src/main/java/com/example/email";
     private final static String FILE_PATH_WIN = "/home/frama/git/email-server/src/main/java/com/example/server/email/";
 
-    private String FILE_PATH_TO_USE = FILE_PATH_WIN;
+    private String FILE_PATH_TO_USE = FILE_PATH_MAC;
 
     private UserService(LogModel logModel, ObjectOutputStream out) {
         this.logModel = logModel;
@@ -51,12 +51,12 @@ public class UserService {
         try (ObjectInputStream objectInput = new ObjectInputStream((new FileInputStream(FILE_PATH_TO_USE + email.toLowerCase() + ".txt")))) {
             return (User) objectInput.readObject();
         } catch (IOException | ClassNotFoundException fileNotFoundException) {
-            logModel.setLog("ERROR: file" + FILE_PATH_TO_USE + email.toLowerCase() + "not found");
-            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
+            logModel.setLog("ERROR: file" + FILE_PATH_TO_USE + email.toLowerCase() + ".txt not found");
+
         } finally {
             read.unlock();
         }
-        return null;
+      return null;
     }
 
     public User readUserFromFileBlocking(String email) throws IOException {
@@ -65,7 +65,7 @@ public class UserService {
             return (User) objectInput.readObject();
         } catch (IOException | ClassNotFoundException fileNotFoundException) {
             logModel.setLog("ERROR: file " + FILE_PATH_TO_USE + email.toLowerCase() + ".txt not found");
-            out.writeObject(new Communication("server_error", new ErrorBody("fileNotFoundException")));
+            out.writeObject(new Communication("server_error", new ErrorBody(email,"fileNotFoundException")));
         }
         return null;
     }
