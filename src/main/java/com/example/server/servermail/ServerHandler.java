@@ -48,7 +48,7 @@ public class ServerHandler implements Runnable {
 		if (user == null) {
 			logModel.setLog("Client " + email + " :null, created!");
 			user = userService.createUser(email);
-			//out.writeObject(new Communication("user_created", new ErrorBody(email, "user not found")));
+			out.writeObject(new Communication("user_created", new ErrorBody(email, "user not found")));
 		}
 
 		ArrayList<ArrayList<EmailBody>> arrayLists = new ArrayList<>();
@@ -76,59 +76,6 @@ public class ServerHandler implements Runnable {
 		Communication response = new Communication("connection_ok", new ConnectionBody(user.getUser(), arrayLists));
 		out.writeObject(response);
 	}
-
-	// private void sendEmail(EmailBody email) throws IOException {
-	// 	this.checkExist.clear();
-	// 	logModel.setLog("User " + email.getSender()
-	// 			+ " sending email: " + email.getId()
-	// 			+ " to: " + email.getReceivers().stream().collect(Collectors.joining(", ")));
-
-	// 	// blocco il file del sender
-	// 	User sender = userService.readUserFromFileBlocking(email.getSender());
-
-	// 	if (sender == null) {
-	// 		userService.unlock(email.getSender());
-	// 		logModel.setLog("ERRORE: sender non trovato");
-	// 		out.writeObject(new Communication("emails_not_saved", new BooleanBody(sender.getUser(), false)));
-	// 		return;
-	// 	}
-
-	// 	for (String receiver : email.getReceivers()) {
-	// 		try {
-	// 			this.userReceiver = userService.readUserFromFileBlocking(receiver);
-
-	// 			/* Gestione sender uguale a receiver: altrimenti scrive due volte sullo stesso file */
-	// 			if (receiver.equals(email.getSender())) {
-	// 				userService.unlock(receiver);
-	// 				continue;
-	// 			}
-
-	// 			/* Se il receiver non è null allora scrivo sul file e poi fa l'unlock da solo*/
-	// 			if (userReceiver != null) {
-	// 				userReceiver.getEmails().add(email);
-	// 				userService.writeUserToFile(userReceiver);
-	// 			}
-
-	// 		} catch (Exception e) {
-	// 			userService.unlock(receiver);
-	// 			logModel.setLog("ERRORE: " + receiver + " non trovato");
-	// 			checkExist.add(receiver);
-	// 		}
-
-	// 	}
-
-	// 	/* Se invia l'email almeno ad un receiver me la salvo tra le inviate*/
-	// 	if (this.checkExist.size() < email.getReceivers().size() && this.checkExist.size() > 0) {
-	// 		sender.getEmails().add(email);
-	// 		userService.writeUserToFile(sender);
-	// 		out.writeObject(new Communication("emails_saved_with_error", new EmailBody(null, checkExist, null, null)));
-	// 	}
-	// 	else if (this.checkExist.size() == email.getReceivers().size()) {
-	// 		out.writeObject(new Communication("emails_not_saved", new EmailBody(null, checkExist, null, null)));
-	// 	} else {
-	// 		out.writeObject(new Communication("emails_saved", new BooleanBody(sender.getUser(), true)));
-	// 	}
-	// }
 
 	private void sendEmail(EmailBody email) throws IOException {
 
@@ -211,8 +158,8 @@ public class ServerHandler implements Runnable {
 			 * aggiungo l'email
 			 * */
 			if ((getEmailsBody.getTimestamp() == null || e.getTimestamp().after(getEmailsBody.getTimestamp())) 
-			/*&& 
-			(!getEmailsBody.getEmail().equals(e.getSender()) || e.getReceivers().contains(getEmailsBody.getEmail()))*/) {
+			&&
+			(!getEmailsBody.getEmail().equals(e.getSender()) || e.getReceivers().contains(getEmailsBody.getEmail()))) {
 				emailBodies.add(e);
 			}
 		}
