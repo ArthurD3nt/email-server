@@ -119,14 +119,13 @@ public class ServerHandler implements Runnable {
 		}
 
 		/* Se invia l'email almeno ad un receiver me la salvo tra le inviate*/
-		if (this.checkExist.size() < email.getReceivers().size()) {
+		if (this.checkExist.size() < email.getReceivers().size() && this.checkExist.size() > 0) {
 			sender.getEmails().add(email);
 			userService.writeUserToFile(sender);
-		}
-
-
-		if (this.checkExist.size() > 0) {
 			out.writeObject(new Communication("emails_saved_with_error", new EmailBody(null, checkExist, null, null)));
+		}
+		else if (this.checkExist.size() == email.getReceivers().size()) {
+			out.writeObject(new Communication("emails_not_saved", new EmailBody(null, checkExist, null, null)));
 		} else {
 			out.writeObject(new Communication("emails_saved", new BooleanBody(sender.getUser(), true)));
 		}
