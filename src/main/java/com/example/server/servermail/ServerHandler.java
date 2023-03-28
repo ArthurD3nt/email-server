@@ -159,7 +159,8 @@ public class ServerHandler implements Runnable {
 			 * */
 			if ((getEmailsBody.getTimestamp() == null || e.getTimestamp().after(getEmailsBody.getTimestamp())) 
 			&&
-			(!getEmailsBody.getEmail().equals(e.getSender()) || e.getReceivers().contains(getEmailsBody.getEmail()))) {
+			(!getEmailsBody.getEmail().equals(e.getSender()) || e.getReceivers().contains(getEmailsBody.getEmail()))
+			&& !e.getBin()) {
 				emailBodies.add(e);
 			}
 		}
