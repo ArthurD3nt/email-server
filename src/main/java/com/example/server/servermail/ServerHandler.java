@@ -169,38 +169,52 @@ public class ServerHandler implements Runnable {
 	}
 
 	private void moveToBin(String id, String email) throws IOException {
-		User user = userService.readUserFromFileBlocking(email);
-		for (EmailBody e : user.getEmails()) {
-			if (e.getId().equals(id)) {
-				e.setBin(true);
-				logModel.setLog("Client: " + email + " moved to bin email with id " + id);
+		try {
+			User user = null;
+			user = userService.readUserFromFileBlocking(email);
+
+			for (EmailBody e : user.getEmails()) {
+				if (e.getId().equals(id)) {
+					e.setBin(true);
+					logModel.setLog("Client: " + email + " moved to bin email with id " + id);
+				}
 			}
+
+			userService.writeUserToFile(user);
+
+			out.writeObject(new Communication("bin_ok", new BooleanBody(email, true)));
+		} catch (IOException e) {
+			out.writeObject(new Communication("bin_not_ok", new BooleanBody(email, false)));
 		}
-		userService.writeUserToFile(user);
-		out.writeObject(new Communication("bin_ok", new BooleanBody(email, true)));
 
 	}
 
 	private void deletePermanently(String email) throws IOException {
-		User user = userService.readUserFromFileBlocking(email);
-		int i = 0;
-		;
+		try {
+			User user = null;
+			user = userService.readUserFromFileBlocking(email);
 
-		if (user.getEmails().size() == 0) {
+			int i = 0;
+
+			if (user.getEmails().size() == 0) {
+				out.writeObject(new Communication("delete_permanently_not_ok", new BooleanBody(email, false)));
+			}
+
+			while (i < user.getEmails().size()) {
+				if (user.getEmails().get(i).getBin()) {
+					logModel.setLog("Client: " + email + " remove email with id " + user.getEmails().get(i).getId());
+					user.getEmails().remove(i);
+				} else {
+					i++;
+				}
+			}
+			userService.writeUserToFile(user);
+
+			out.writeObject(new Communication("delete_permanently_ok", new BooleanBody(email, true)));
+		} catch (IOException e) {
 			out.writeObject(new Communication("delete_permanently_not_ok", new BooleanBody(email, false)));
 		}
 
-		while (i < user.getEmails().size()) {
-			if (user.getEmails().get(i).getBin()) {
-				logModel.setLog("Client: " + email + " remove email with id " + user.getEmails().get(i).getId());
-				user.getEmails().remove(i);
-			} else {
-				i++;
-			}
-		}
-		userService.writeUserToFile(user);
-
-		out.writeObject(new Communication("delete_permanently_ok", new BooleanBody(email, true)));
 	}
 
 	@Override
